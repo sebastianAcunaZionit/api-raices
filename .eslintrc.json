@@ -6,10 +6,7 @@
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:prettier/recommended",
-        "plugin:import/errors",
-        "plugin:import/warnings",
-        "plugin:import/typescript"
+        "plugin:prettier/recommended"
     ],
     "overrides": [
     ],
@@ -19,7 +16,9 @@
     },
     "plugins": ["@typescript-eslint", "prettier", "import"],
     "rules": {
-        "prettier/prettier":"error",
+        "prettier/prettier":["error", {
+            "endOfLine": "auto"
+          }],
         "import/extensions":"off",
         "no-console":"off"
     }

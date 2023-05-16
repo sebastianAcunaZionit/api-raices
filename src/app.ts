@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import { getLotNumberDetailRoute } from "./getLotNumberDetail/infraestructure/http/getLotNumberDetail.route";
 
 const app = express();
 
@@ -11,4 +12,7 @@ app.use(express.json());
 
 const port = process.env.PORT || 3001;
 
-app.listen(() => console.log(`Running at port ${port}`));
+const baseUrl = "/api/v1";
+app.use(`${baseUrl}/anexos`, getLotNumberDetailRoute);
+
+app.listen(port, () => console.log(`Running at port ${port}`));
