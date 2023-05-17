@@ -6,6 +6,47 @@ import { DBConexion } from "@src/shared/infrastructure/repository/dbConexion";
 export class GetLotNumberDetailRepo implements IGetLotNumberDetailRepo {
   constructor(public readonly db: DBConexion) {}
 
+  async getLotNumberById(lotNumberName: string): Promise<ILotNumberDetail | null> {
+    await this.db.connect();
+
+    const sql = `SELECT 
+    AC.id_ac AS lotNumberId, 
+    AC.num_anexo AS lotNumber, 
+    V.fecha_r AS lastVisitDate, 
+    V.id_visita AS lastVisitId, 
+    F.id_tempo AS seasonId
+    FROM anexo_contrato AC 
+    left JOIN visita V USING (id_ac) 
+    inner join ficha F using (id_ficha)
+    WHERE AC.num_anexo = :lotNumberName
+    GROUP BY AC.id_ac
+    ORDER BY V.id_visita DESC
+    LIMIT 1
+    `;
+
+    const data: ILotNumberDetail[] =
+      (await this.db.conn?.query({ sql, bigIntAsNumber: true, namedPlaceholders: true }, { lotNumberName })) || [];
+    await this.db.disconnect();
+
+    return data.length === 0 ? null : data[0];
+  }
+
+  async getImages(id: string): Promise<{ imagePath: string } | null> {
+    await this.db.connect();
+
+    const sql = `SELECT ruta_foto imagePath 
+    from fotos 
+    INNER JOIN visita USING (id_visita) 
+    WHERE id_ac = :lotNumberId 
+    order by id_visita desc 
+    limit 1`;
+
+    const data: { imagePath: string }[] =
+      (await this.db.conn?.query({ sql, bigIntAsNumber: true, namedPlaceholders: true }, { lotNumberId: id })) || [];
+    await this.db.disconnect();
+    return data.length === 0 ? null : data[0];
+  }
+
   async getCoordinates(id: string, seasonId: number, latId: number, longId: number): Promise<Coordinate> {
     await this.db.connect();
 
@@ -25,45 +66,9 @@ export class GetLotNumberDetailRepo implements IGetLotNumberDetailRepo {
       )) || [];
     await this.db.disconnect();
 
-    const lat = data[0]?.valor ?? "";
-    const long = data[1]?.valor ?? "";
+    const lat = Number(data[0]?.valor.replace(",", "."));
+    const long = Number(data[1]?.valor.replace(",", "."));
 
     return [lat, long];
-  }
-
-  async getImages(id: string): Promise<{ imagePath: string } | null> {
-    await this.db.connect();
-
-    const sql = `SELECT ruta_foto imagePath 
-    from fotos 
-    INNER JOIN visita USING (id_visita) 
-    WHERE id_ac = :lotNumberId 
-    order by id_visita desc 
-    limit 1`;
-
-    const data: { imagePath: string }[] =
-      (await this.db.conn?.query({ sql, bigIntAsNumber: true, namedPlaceholders: true }, { lotNumberId: id })) || [];
-    await this.db.disconnect();
-    return data.length === 0 ? null : data[0];
-  }
-
-  async getLotNumberById(lotNumberName: string): Promise<ILotNumberDetail | null> {
-    await this.db.connect();
-
-    const sql = `SELECT AC.id_ac AS lotNumberId, AC.num_anexo AS lotNumber, V.fecha_r AS lastVisitDate, V.id_visita AS lastVisitId, F.id_tempo AS seasonId
-    FROM anexo_contrato AC 
-    left JOIN visita V USING (id_ac) 
-    inner join ficha F using (id_ficha)
-    WHERE AC.num_anexo = :lotNumberName
-    GROUP BY AC.id_ac
-    ORDER BY V.id_visita DESC
-    LIMIT 1
-    `;
-
-    const data: ILotNumberDetail[] =
-      (await this.db.conn?.query({ sql, bigIntAsNumber: true, namedPlaceholders: true }, { lotNumberName })) || [];
-    await this.db.disconnect();
-
-    return data.length === 0 ? null : data[0];
   }
 }
