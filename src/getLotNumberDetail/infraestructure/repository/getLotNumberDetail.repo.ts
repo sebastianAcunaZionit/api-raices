@@ -52,7 +52,7 @@ export class GetLotNumberDetailRepo implements IGetLotNumberDetailRepo {
 
     const sql = `SELECT AC.id_ac AS lotNumberId, AC.num_anexo AS lotNumber, V.fecha_r AS lastVisitDate, V.id_visita AS lastVisitId, F.id_tempo AS seasonId
     FROM anexo_contrato AC 
-    INNER JOIN visita V USING (id_ac) 
+    left JOIN visita V USING (id_ac) 
     inner join ficha F using (id_ficha)
     WHERE AC.num_anexo = :lotNumberName
     GROUP BY AC.id_ac
