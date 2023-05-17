@@ -1,13 +1,14 @@
 import axios from "axios";
-import { IGetLotNumberDetailApp, RequestApp, Response } from "../domain/getLotNumberDetail.app";
+import { IGetLotNumberDetailApp, RequestApp } from "../domain/getLotNumberDetail.app";
 import { IGetLotNumberDetailRepo } from "../domain/getLotNumberDetail.repo";
 import httpStatus from "http-status";
 import moment from "moment";
+import { ResponseApp } from "@src/shared/domain/general";
 
 export class GetLotNumberDetailApp implements IGetLotNumberDetailApp {
   constructor(public readonly repository: IGetLotNumberDetailRepo) {}
 
-  async run({ lotNumberId, coordinates, systemData }: RequestApp): Promise<Response> {
+  async run({ lotNumberId, coordinates, systemData }: RequestApp): Promise<ResponseApp> {
     try {
       const lotNumber = await this.repository.getLotNumberById(lotNumberId);
       if (!lotNumber) throw new Error("Anexo no existe.").message;

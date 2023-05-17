@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import { ErrorHandling } from "@src/shared/utils/ErrorHandling";
 
-export const mwValidateAnex = async (req: Request, res: Response, next: NextFunction) => {
+export const mwValidateKey = async (req: Request, res: Response, next: NextFunction) => {
   const { key } = req.params;
   if (!key) {
     return res.status(httpStatus.UNAUTHORIZED).json({
