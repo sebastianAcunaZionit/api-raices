@@ -1,3 +1,3 @@
-export type Coordinate = [number, number];
+export type Coordinate = { lat: number; long: number };
 
 export type CoordinateId = { latId: number; longId: number };

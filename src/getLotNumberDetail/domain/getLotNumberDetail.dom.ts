@@ -15,6 +15,11 @@ export interface ILotNumberDetail {
   seasonId: number;
   latId: number;
   longId: number;
+  userFullName: string;
+  userMail: string;
+  userPhoneNumber: string;
+  groundType: string;
+  phenologicalState: string;
 }
 
 export class GetLotNumberDetail implements IGetLotNumberDetail {

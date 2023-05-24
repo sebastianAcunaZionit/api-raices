@@ -4,6 +4,11 @@ import { ResponseApp } from "@src/shared/domain/general";
 import { IGetLotNumbersApp } from "../domain/getLotNumbers.app";
 import { IGetLotNumbersRepo } from "../domain/getLotNumbers.repo";
 
+type LotNumberResponse = {
+  num_anexo: string;
+  fecha_visita: string;
+};
+type data = { temporada: string; anexos: LotNumberResponse[] };
 export class GetLotNumberApp implements IGetLotNumbersApp {
   constructor(public repository: IGetLotNumbersRepo) {}
   async run(): Promise<ResponseApp> {
@@ -11,16 +16,22 @@ export class GetLotNumberApp implements IGetLotNumbersApp {
       const lotNumbers = await this.repository.getAll();
       const seasons = await this.repository.getAllSeasons();
 
-      const data = seasons.map(season => {
-        const lotNumber = lotNumbers
-          .filter(lotNumber => lotNumber.seasonId == season.seasonId)
-          .map(lotNumber => ({
-            num_anexo: lotNumber.lotNumberName,
-            fecha_visita: lotNumber.lastVisitDate ? moment(lotNumber.lastVisitDate).format("YYYY-MM-DD") : "sin fecha",
-          }));
+      const data: data[] = [];
 
-        return { temporada: season.name, anexos: lotNumber };
-      });
+      for (const season of seasons) {
+        const lotNumberReponse: LotNumberResponse[] = [];
+        const filterLN = lotNumbers.filter(lotNumber => lotNumber.seasonId == season.seasonId);
+        for (const lotNumber of filterLN) {
+          const ultimaVisita = await this.repository.getLastVisit(lotNumber.lotNumberId);
+          lotNumberReponse.push({
+            num_anexo: lotNumber.lotNumberName,
+            fecha_visita: ultimaVisita?.lastVisitDate
+              ? moment(ultimaVisita.lastVisitDate).format("YYYY-MM-DD")
+              : "sin fecha",
+          });
+        }
+        data.push({ temporada: season.name, anexos: lotNumberReponse });
+      }
 
       return { statusCode: httpStatus.OK, message: "lista de anexos", data };
     } catch (error) {

@@ -4,6 +4,7 @@ import { IGetLotNumberDetailRepo } from "../domain/getLotNumberDetail.repo";
 import httpStatus from "http-status";
 import moment from "moment";
 import { ResponseApp } from "@src/shared/domain/general";
+import vilabService from "@src/shared/vilab.dependency";
 
 export class GetLotNumberDetailApp implements IGetLotNumberDetailApp {
   constructor(public readonly repository: IGetLotNumberDetailRepo) {}
@@ -21,23 +22,34 @@ export class GetLotNumberDetailApp implements IGetLotNumberDetailApp {
 
       const image = await this.repository.getImages(lotNumber.lotNumberId);
       let base64Image = "No contiene imagen";
+      let urlImagen = "No contiene imagen";
       if (image) {
-        const url = `${systemData.baseUrl}/${image?.imagePath
+        urlImagen = `${systemData.baseUrl}/${image?.imagePath
           .replaceAll("../", "")
           .replaceAll(`${systemData.oldImagePath}`, `${systemData.newImagePath}`)}`;
-        const data = await axios
-          .get(url, { responseType: "arraybuffer" })
-          .then(response => Buffer.from(response.data, "binary").toString("base64"));
-        base64Image = data;
+        base64Image = await this.getEncodedImage(urlImagen);
       }
 
+      const lastVisitDate = lotNumber.lastVisitDate
+        ? moment(lotNumber.lastVisitDate).format("YYYY-MM-DD")
+        : "Sin visita registrada";
+
+      const vilabLotNumber = await vilabService.run({ lotNumber: lotNumber.lotNumber });
+
       const data = {
-        num_anexo: lotNumber.lotNumber,
-        fecha_visita: lotNumber.lastVisitDate
-          ? moment(lotNumber.lastVisitDate).format("YYYY-MM-DD")
-          : "Sin visita registrada",
+        lote: lotNumber.lotNumber,
+        fechaVisita: lastVisitDate,
+        tipoSuelo: lotNumber.groundType,
+        estadoFenologico: lotNumber.phenologicalState,
+        encargado: {
+          nombre: lotNumber.userFullName,
+          telefono: lotNumber.userPhoneNumber,
+          correo: lotNumber.userMail,
+        },
         coordenadas: coordinatesList,
-        image: base64Image,
+        poligonos: vilabLotNumber ? JSON.parse(vilabLotNumber.Poligono) : {},
+        urlImagen: urlImagen,
+        imagen: base64Image,
       };
 
       return { statusCode: httpStatus.OK, message: "Detalle de anexo", data };
@@ -51,5 +63,13 @@ export class GetLotNumberDetailApp implements IGetLotNumberDetailApp {
       }
       return { statusCode: statusCode, message: message, data: null };
     }
+  }
+
+  private async getEncodedImage(url: string) {
+    const data = await axios
+      .get(url, { responseType: "arraybuffer" })
+      .then(response => Buffer.from(response.data, "binary").toString("base64"))
+      .catch(() => "No se econtro imagen");
+    return data;
   }
 }

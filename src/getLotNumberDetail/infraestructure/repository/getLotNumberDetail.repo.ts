@@ -14,12 +14,18 @@ export class GetLotNumberDetailRepo implements IGetLotNumberDetailRepo {
     AC.num_anexo AS lotNumber, 
     V.fecha_r AS lastVisitDate, 
     V.id_visita AS lastVisitId, 
-    F.id_tempo AS seasonId
+    F.id_tempo AS seasonId,
+    CONCAT(U.nombre, ' ', U.apellido_p) AS userFullName,
+    U.telefono AS userPhoneNumber,
+    U.email AS userMail,
+    TS.descripcion groundType,
+    V.estado_fen AS phenologicalState
     FROM anexo_contrato AC 
     left JOIN visita V USING (id_ac) 
     inner join ficha F using (id_ficha)
+    inner join usuarios U ON (U.id_usuario = F.id_usuario) 
+    INNER JOIN tipo_suelo TS ON (F.id_tipo_suelo = TS.id_tipo_suelo)
     WHERE AC.num_anexo = :lotNumberName
-    GROUP BY AC.id_ac
     ORDER BY V.id_visita DESC
     LIMIT 1
     `;
@@ -69,6 +75,6 @@ export class GetLotNumberDetailRepo implements IGetLotNumberDetailRepo {
     const lat = Number(data[0]?.valor.replace(",", "."));
     const long = Number(data[1]?.valor.replace(",", "."));
 
-    return [lat, long];
+    return { lat, long };
   }
 }
