@@ -1,6 +1,6 @@
 {
-  "name": "backend-template",
-  "version": "0.2.0",
+  "name": "api-raices",
+  "version": "0.3.0",
   "description": "template for backend projects with typescript",
   "main": "app.js",
   "scripts": {

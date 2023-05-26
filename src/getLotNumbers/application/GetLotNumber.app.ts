@@ -5,10 +5,12 @@ import { IGetLotNumbersApp } from "../domain/getLotNumbers.app";
 import { IGetLotNumbersRepo } from "../domain/getLotNumbers.repo";
 
 type LotNumberResponse = {
-  num_anexo: string;
+  lote: string;
   fecha_visita: string;
+  especie: string;
+  variedad: string;
 };
-type data = { temporada: string; anexos: LotNumberResponse[] };
+type data = { temporada: string; anexos: LotNumberResponse[]; total: number };
 export class GetLotNumberApp implements IGetLotNumbersApp {
   constructor(public repository: IGetLotNumbersRepo) {}
   async run(): Promise<ResponseApp> {
@@ -24,16 +26,18 @@ export class GetLotNumberApp implements IGetLotNumbersApp {
         for (const lotNumber of filterLN) {
           const ultimaVisita = await this.repository.getLastVisit(lotNumber.lotNumberId);
           lotNumberReponse.push({
-            num_anexo: lotNumber.lotNumberName,
+            lote: lotNumber.lotNumberName,
             fecha_visita: ultimaVisita?.lastVisitDate
               ? moment(ultimaVisita.lastVisitDate).format("YYYY-MM-DD")
               : "sin fecha",
+            especie: lotNumber.specieName,
+            variedad: lotNumber.varietyName,
           });
         }
-        data.push({ temporada: season.name, anexos: lotNumberReponse });
+        data.push({ temporada: season.name, anexos: lotNumberReponse, total: lotNumberReponse.length });
       }
 
-      return { statusCode: httpStatus.OK, message: "lista de anexos", data };
+      return { statusCode: httpStatus.OK, message: "lista de anexos", data: data.filter(el => el.anexos.length > 0) };
     } catch (error) {
       console.log(error);
       let message = "Error consultando la api";

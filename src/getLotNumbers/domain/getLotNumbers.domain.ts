@@ -6,4 +6,6 @@ export interface IGetLotNumber {
   lotNumberName: string;
   lastVisitDate: string;
   seasonId: SeasonId;
+  varietyName: string;
+  specieName: string;
 }

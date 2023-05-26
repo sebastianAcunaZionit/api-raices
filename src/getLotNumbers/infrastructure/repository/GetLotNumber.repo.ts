@@ -10,10 +10,19 @@ export class GetLotNumberRepo implements IGetLotNumbersRepo {
   async getAll(): Promise<IGetLotNumber[]> {
     await this.db.connect();
 
-    const sql = `SELECT AC.id_ac AS lotNumberId, AC.num_anexo AS lotNumberName, V.fecha_r AS lastVisitDate, V.id_visita AS lastVisitId, F.id_tempo AS seasonId
+    const sql = `SELECT 
+    AC.id_ac AS lotNumberId, 
+    AC.num_anexo AS lotNumberName, 
+    V.fecha_r AS lastVisitDate, 
+    V.id_visita AS lastVisitId, 
+    F.id_tempo AS seasonId,
+    M.nom_hibrido AS varietyName,
+    E.nombre AS specieName
     FROM anexo_contrato AC 
     left JOIN visita V USING (id_ac) 
     inner join ficha F using (id_ficha)
+    inner join materiales M using (id_materiales)
+    inner join especie E ON (M.id_esp = E.id_esp)
     GROUP BY AC.id_ac
     ORDER BY V.id_visita DESC `;
 

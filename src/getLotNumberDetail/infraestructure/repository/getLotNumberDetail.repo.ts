@@ -19,12 +19,16 @@ export class GetLotNumberDetailRepo implements IGetLotNumberDetailRepo {
     U.telefono AS userPhoneNumber,
     U.email AS userMail,
     TS.descripcion groundType,
-    V.estado_fen AS phenologicalState
+    V.estado_fen AS phenologicalState,
+    M.nom_hibrido AS varietyName,
+    E.nombre AS specieName
     FROM anexo_contrato AC 
     left JOIN visita V USING (id_ac) 
     inner join ficha F using (id_ficha)
     inner join usuarios U ON (U.id_usuario = F.id_usuario) 
     INNER JOIN tipo_suelo TS ON (F.id_tipo_suelo = TS.id_tipo_suelo)
+    inner join materiales M USING (id_materiales)
+    inner join especie E ON (M.id_esp = E.id_esp)
     WHERE AC.num_anexo = :lotNumberName
     ORDER BY V.id_visita DESC
     LIMIT 1

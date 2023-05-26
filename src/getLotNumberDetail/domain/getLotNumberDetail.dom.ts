@@ -20,6 +20,8 @@ export interface ILotNumberDetail {
   userPhoneNumber: string;
   groundType: string;
   phenologicalState: string;
+  varietyName: string;
+  specieName: string;
 }
 
 export class GetLotNumberDetail implements IGetLotNumberDetail {

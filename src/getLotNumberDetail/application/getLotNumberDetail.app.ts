@@ -39,6 +39,8 @@ export class GetLotNumberDetailApp implements IGetLotNumberDetailApp {
       const data = {
         lote: lotNumber.lotNumber,
         fechaVisita: lastVisitDate,
+        especie: lotNumber.specieName,
+        variedad: lotNumber.varietyName,
         tipoSuelo: lotNumber.groundType,
         estadoFenologico: lotNumber.phenologicalState,
         encargado: {
