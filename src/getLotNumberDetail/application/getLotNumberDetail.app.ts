@@ -20,14 +20,17 @@ export class GetLotNumberDetailApp implements IGetLotNumberDetailApp {
         coordinates.longId
       );
 
-      const image = await this.repository.getImages(lotNumber.lotNumberId);
-      let base64Image = "No contiene imagen";
-      let urlImagen = "No contiene imagen";
-      if (image) {
-        urlImagen = `${systemData.baseUrl}/${image?.imagePath
+      const images = await this.repository.getImages(lotNumber.lotNumberId);
+
+      const imageList = [];
+
+      for (const image of images) {
+        const urlImagen = `${systemData.baseUrl}/${image?.imagePath
           .replaceAll("../", "")
           .replaceAll(`${systemData.oldImagePath}`, `${systemData.newImagePath}`)}`;
-        base64Image = await this.getEncodedImage(urlImagen);
+        const base64Imagen = await this.getEncodedImage(urlImagen);
+
+        imageList.push({ urlImagen, base64Imagen, medida_raiz: Number(image.rootMeasure) ?? 0 });
       }
 
       const lastVisitDate = lotNumber.lastVisitDate
@@ -50,8 +53,7 @@ export class GetLotNumberDetailApp implements IGetLotNumberDetailApp {
         },
         coordenadas: coordinatesList,
         poligonos: vilabLotNumber ? JSON.parse(vilabLotNumber.Poligono) : {},
-        urlImagen: urlImagen,
-        imagen: base64Image,
+        imagenes: imageList,
       };
 
       return { statusCode: httpStatus.OK, message: "Detalle de anexo", data };

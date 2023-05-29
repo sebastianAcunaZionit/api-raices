@@ -1,5 +1,5 @@
 import { ILotNumberDetail } from "@src/getLotNumberDetail/domain/getLotNumberDetail.dom";
-import { IGetLotNumberDetailRepo } from "@src/getLotNumberDetail/domain/getLotNumberDetail.repo";
+import { IGetLotNumberDetailRepo, ImageReponse } from "@src/getLotNumberDetail/domain/getLotNumberDetail.repo";
 import { Coordinate } from "@src/shared/domain/coordinates";
 import { DBConexion } from "@src/shared/infrastructure/repository/dbConexion";
 
@@ -41,20 +41,22 @@ export class GetLotNumberDetailRepo implements IGetLotNumberDetailRepo {
     return data.length === 0 ? null : data[0];
   }
 
-  async getImages(id: string): Promise<{ imagePath: string } | null> {
+  async getImages(id: string): Promise<ImageReponse[]> {
     await this.db.connect();
 
-    const sql = `SELECT ruta_foto imagePath 
+    const sql = `SELECT ruta_foto AS imagePath, medida_raices AS rootMeasure
     from fotos 
     INNER JOIN visita USING (id_visita) 
-    WHERE id_ac = :lotNumberId 
-    order by id_visita desc 
-    limit 1`;
+    WHERE id_ac = :lotNumberId AND vista = :vista
+    order by id_visita desc`;
 
-    const data: { imagePath: string }[] =
-      (await this.db.conn?.query({ sql, bigIntAsNumber: true, namedPlaceholders: true }, { lotNumberId: id })) || [];
+    const data: ImageReponse[] =
+      (await this.db.conn?.query(
+        { sql, bigIntAsNumber: true, namedPlaceholders: true },
+        { lotNumberId: id, vista: "raices" }
+      )) || [];
     await this.db.disconnect();
-    return data.length === 0 ? null : data[0];
+    return data;
   }
 
   async getCoordinates(id: string, seasonId: number, latId: number, longId: number): Promise<Coordinate> {
