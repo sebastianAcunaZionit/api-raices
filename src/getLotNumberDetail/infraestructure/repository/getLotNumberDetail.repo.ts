@@ -63,23 +63,19 @@ export class GetLotNumberDetailRepo implements IGetLotNumberDetailRepo {
     await this.db.connect();
 
     console.log({ id });
-    const sql = `select valor from detalle_visita_prop 
-    inner join prop_cli_mat PCM using(id_prop_mat_cli) 
-    inner join visita using(id_visita)
-    where (PCM.identificador = :latId OR PCM.identificador = :longId) AND id_tempo = :seasonId AND visita.id_ac = :lotNumberId
-    group by PCM.identificador
-    order by PCM.orden asc
-    LIMIT 2
+    const sql = `select latitud_ficha,  longitud_ficha from ficha 
+    inner join anexo_contrato using(id_ficha) 
+    WHERE anexo_contrato.id_ac = :lotNumberId
     `;
-    const data: { valor: string }[] =
+    const data: { latitud_ficha: string; longitud_ficha: string }[] =
       (await this.db.conn?.query(
         { sql, bigIntAsNumber: true, namedPlaceholders: true },
         { lotNumberId: id, seasonId, latId, longId }
       )) || [];
     await this.db.disconnect();
 
-    const lat = Number(data[0]?.valor.replace(",", "."));
-    const long = Number(data[1]?.valor.replace(",", "."));
+    const lat = Number(data[0]?.latitud_ficha?.replace(",", ".") ?? 0);
+    const long = Number(data[1]?.longitud_ficha?.replace(",", ".") ?? 0);
 
     return { lat, long };
   }
