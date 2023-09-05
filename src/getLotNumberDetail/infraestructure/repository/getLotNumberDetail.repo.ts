@@ -74,8 +74,8 @@ export class GetLotNumberDetailRepo implements IGetLotNumberDetailRepo {
       )) || [];
     await this.db.disconnect();
 
-    const lat = Number(data[0]?.latitud_ficha?.replace(",", ".") ?? 0);
-    const long = Number(data[1]?.longitud_ficha?.replace(",", ".") ?? 0);
+    const lat = Number(data[0]?.latitud_ficha?.replace(",", "."));
+    const long = Number(data[0]?.longitud_ficha?.replace(",", "."));
 
     return { lat, long };
   }
